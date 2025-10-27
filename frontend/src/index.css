@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+.input {
+    @apply w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400;
+}
+
+/* Animated gradient background utility */
+.animated-gradient {
+    background: linear-gradient(-45deg, #6366f1, #8b5cf6, #ec4899, #f59e0b);
+    background-size: 400% 400%;
+    animation: animatedGradient 18s ease infinite;
+}
+
+@keyframes animatedGradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Footer wave animation */
+.footer-wave {
+    height: 84px;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 84' preserveAspectRatio='none'><path fill='%23f3f4f6' d='M0,64L80,53.3C160,43,320,21,480,16C640,11,800,21,960,32C1120,43,1280,53,1360,58.7L1440,64L1440,0L1360,0C1280,0,1120,0,960,0C800,0,640,0,480,0C320,0,160,0,80,0L0,0Z'/></svg>");
+    background-repeat: repeat-x;
+    background-size: auto 84px;
+    animation: footerWaveScroll 16s linear infinite;
+    filter: drop-shadow(0 1px 0 rgba(0,0,0,0.02));
+}
+
+@keyframes footerWaveScroll {
+    0% { background-position-x: 0; }
+    100% { background-position-x: -1440px; }
+}
+
+.my-masonry-grid {
+    display: flex;
+    margin-left: -1rem;
+    width: auto;
+  }
+  .my-masonry-grid_column {
+    padding-left: 1rem;
+    background-clip: padding-box;
+  }
+  .my-masonry-grid_column > div {
+    margin-bottom: 1rem;
+  }
