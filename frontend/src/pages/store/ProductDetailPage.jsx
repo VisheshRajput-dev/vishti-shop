@@ -41,7 +41,7 @@ export default function ProductDetailPage() {
     name: user?.name || '',
     email: user?.email || '',
     phone: user?.phone || '',
-    quantity: 1,
+    quantity: product?.wholesaleMinQty || 30,
     message: ''
   });
   const [submittingInquiry, setSubmittingInquiry] = useState(false);
@@ -56,19 +56,30 @@ export default function ProductDetailPage() {
       try {
         setLoading(true);
 
-        const [productRes, relatedRes] = await Promise.all([
-          client.get(`/api/products/${id}`),
-          client.get(`/api/products?limit=8`),
-        ]);
-
+        // First fetch the current product
+        const productRes = await client.get(`/api/products/${id}`);
         const productData = productRes.data;
         setProduct(productData);
 
-        // Filter related by category & exclude same product
-        const related = relatedRes.data.items.filter(
-          (p) => p._id !== productData._id && p.category?._id === productData.category?._id
-        );
-        setRelatedProducts(related);
+        // Then fetch related products from the same category
+        if (productData.category?._id) {
+          const relatedRes = await client.get(`/api/products?category=${productData.category._id}&limit=12`);
+          
+          // Filter out the current product and take up to 8 related products
+          const related = relatedRes.data.items
+            .filter((p) => p._id !== productData._id)
+            .slice(0, 8);
+          
+          setRelatedProducts(related);
+        } else {
+          // If no category, fetch some random products as fallback
+          const relatedRes = await client.get(`/api/products?limit=8`);
+          const related = relatedRes.data.items
+            .filter((p) => p._id !== productData._id)
+            .slice(0, 8);
+          
+          setRelatedProducts(related);
+        }
       } catch (error) {
         console.error("Error fetching product:", error);
         if (error.response?.status === 404) {
@@ -159,8 +170,10 @@ export default function ProductDetailPage() {
     
     setUpdatingCart(true);
     try {
-      const price =
-        isShop && product.wholesalePrice ? product.wholesalePrice : product.price;
+      // Use fallback wholesale price if not set
+      const price = isShop 
+        ? (product.wholesalePrice || 1999) 
+        : product.price;
 
       const response = await client.post("/api/cart", {
         productId: id,
@@ -408,7 +421,7 @@ export default function ProductDetailPage() {
         name: user?.name || '',
         email: user?.email || '',
         phone: user?.phone || '',
-        quantity: 1,
+        quantity: product?.wholesaleMinQty || 30,
         message: ''
       });
     } catch (error) {
@@ -431,10 +444,59 @@ export default function ProductDetailPage() {
   // Loading State
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-indigo-500 mx-auto mb-4" />
-          <p className="text-gray-600">Loading product details...</p>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+        {/* Navigation Skeleton */}
+        <div className="sticky top-0 z-20 backdrop-blur-md bg-white/90 border-b border-gray-200/50 shadow-soft">
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="h-10 w-24 bg-gray-200 rounded-xl loading-shimmer"></div>
+                <div className="h-8 w-32 bg-gray-200 rounded-lg loading-shimmer"></div>
+              </div>
+              <div className="flex-1 max-w-2xl mx-auto">
+                <div className="h-12 bg-gray-200 rounded-xl loading-shimmer"></div>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="h-10 w-10 bg-gray-200 rounded-xl loading-shimmer"></div>
+                <div className="h-10 w-10 bg-gray-200 rounded-xl loading-shimmer"></div>
+                <div className="h-10 w-10 bg-gray-200 rounded-xl loading-shimmer"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Product Details Skeleton */}
+        <div className="container mx-auto px-4 py-8">
+          <div className="glass-card overflow-hidden mb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
+              {/* Image Skeleton */}
+              <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-8">
+                <div className="space-y-6">
+                  <div className="aspect-square rounded-2xl bg-gray-200 loading-shimmer"></div>
+                  <div className="grid grid-cols-5 gap-3">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <div key={i} className="aspect-square rounded-xl bg-gray-200 loading-shimmer"></div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Info Skeleton */}
+              <div className="p-8 lg:p-12">
+                <div className="space-y-6">
+                  <div className="h-6 w-24 bg-gray-200 rounded-full loading-shimmer"></div>
+                  <div className="h-8 w-3/4 bg-gray-200 rounded loading-shimmer"></div>
+                  <div className="h-4 w-1/2 bg-gray-200 rounded loading-shimmer"></div>
+                  <div className="h-20 w-full bg-gray-200 rounded-2xl loading-shimmer"></div>
+                  <div className="h-16 w-full bg-gray-200 rounded-xl loading-shimmer"></div>
+                  <div className="space-y-3">
+                    <div className="h-12 w-full bg-gray-200 rounded-2xl loading-shimmer"></div>
+                    <div className="h-12 w-full bg-gray-200 rounded-2xl loading-shimmer"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -462,7 +524,7 @@ export default function ProductDetailPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Enhanced Navigation Bar */}
-      <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-100">
+      <div className="sticky top-0 z-20 backdrop-blur-md bg-white/90 border-b border-gray-200/50 shadow-soft">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between gap-4">
             {/* Left Section - Back Button & Brand */}
@@ -470,7 +532,7 @@ export default function ProductDetailPage() {
               <motion.button
                 whileTap={{ scale: 0.95 }}
                 onClick={() => navigate(-1)}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 transition-all duration-200 font-medium"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl btn-secondary font-medium"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -478,9 +540,11 @@ export default function ProductDetailPage() {
                 Back
               </motion.button>
               
-              <div className="hidden sm:flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 shadow-sm" />
-                <span className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600">
+              <div className="hidden sm:flex items-center gap-3">
+                <div className="h-10 w-10 rounded-2xl gradient-primary shadow-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">V</span>
+                </div>
+                <span className="text-xl font-bold text-gradient">
                   Vishti Shop
                 </span>
               </div>
@@ -490,12 +554,12 @@ export default function ProductDetailPage() {
             <div className="flex-1 max-w-2xl mx-auto">
               <div className="relative">
                 <FiSearch className="absolute left-4 top-3.5 text-gray-400" size={20} />
-            <input
-              type="text"
-              placeholder="Search products..."
-              value={searchTerm}
-              onChange={handleSearch}
-                  className="w-full pl-12 pr-12 py-3 rounded-2xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white/90 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-200"
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchTerm}
+                  onChange={handleSearch}
+                  className="input w-full pl-12 pr-12"
                 />
                 {searchTerm && (
                   <button
@@ -516,12 +580,12 @@ export default function ProductDetailPage() {
               <motion.button
                 whileTap={{ scale: 0.95 }}
                 onClick={() => navigate('/cart')}
-                className="relative p-3 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 transition-all duration-200"
+                className="relative p-3 rounded-xl btn-secondary"
                 title="View Cart"
               >
                 <FiShoppingCart className="w-5 h-5" />
                 {cartItem && (
-                  <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-xs font-bold flex items-center justify-center shadow-sm">
+                  <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-gradient-to-r from-pink-500 to-red-500 text-white text-xs font-bold flex items-center justify-center shadow-lg">
                     {cartItem.quantity}
                   </div>
                 )}
@@ -533,8 +597,8 @@ export default function ProductDetailPage() {
                 onClick={toggleWishlist}
                 className={`p-3 rounded-xl transition-all duration-200 ${
                   isInWishlist(id) 
-                    ? "bg-red-100 text-red-600 hover:bg-red-200" 
-                    : "bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900"
+                    ? "bg-red-100 text-red-600 hover:bg-red-200 shadow-md" 
+                    : "btn-secondary"
                 }`}
                 title={isInWishlist(id) ? "Remove from Wishlist" : "Add to Wishlist"}
               >
@@ -557,7 +621,7 @@ export default function ProductDetailPage() {
                         })
                     : navigator.clipboard.writeText(window.location.href);
                 }}
-                className="p-3 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 transition-all duration-200"
+                className="btn-secondary p-3"
                 title="Share Product"
               >
                 <FiShare2 className="w-5 h-5" />
@@ -569,14 +633,14 @@ export default function ProductDetailPage() {
 
       <div className="container mx-auto px-4 py-8">
         {/* Product Details */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden mb-8">
+        <div className="glass-card overflow-hidden mb-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
             {/* Images Section */}
             <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-8">
               <div className="space-y-6">
                 {/* Main Image */}
                 <div
-                  className="relative aspect-w-1 aspect-h-1 rounded-2xl overflow-hidden bg-white shadow-lg"
+                  className="relative aspect-square rounded-2xl overflow-hidden bg-white shadow-lg"
                   onMouseMove={handleImageHover}
                   onMouseEnter={() => setIsZoomed(true)}
                   onMouseLeave={() => setIsZoomed(false)}
@@ -597,7 +661,7 @@ export default function ProductDetailPage() {
                   {/* Zoom indicator */}
                   {isZoomed && (
                     <div className="absolute inset-0 bg-black/10 flex items-center justify-center">
-                      <div className="bg-white/90 px-3 py-1 rounded-full text-sm font-medium">
+                      <div className="glass-card px-3 py-1 text-sm font-medium">
                         Zoomed
                       </div>
                     </div>
@@ -613,7 +677,7 @@ export default function ProductDetailPage() {
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => setActiveImage(index)}
-                        className={`relative aspect-w-1 aspect-h-1 rounded-xl overflow-hidden border-2 transition-all duration-200 ${
+                        className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all duration-200 ${
                           activeImage === index
                             ? "border-indigo-500 shadow-lg"
                             : "border-gray-200 hover:border-gray-300"
@@ -624,6 +688,11 @@ export default function ProductDetailPage() {
                           alt={`${product.name} ${index + 1}`}
                           className="w-full h-full object-cover"
                         />
+                        {activeImage === index && (
+                          <div className="absolute inset-0 bg-indigo-500/20 flex items-center justify-center">
+                            <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
+                          </div>
+                        )}
                       </motion.button>
                     ))}
                   </div>
@@ -636,80 +705,148 @@ export default function ProductDetailPage() {
               <div className="space-y-6">
                 {/* Category Badge */}
                 {product.category && (
-                  <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
+                  <motion.div 
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="inline-flex items-center px-4 py-2 rounded-2xl text-sm font-semibold gradient-primary text-white shadow-lg"
+                  >
                     {product.category.name}
-                  </div>
+                  </motion.div>
                 )}
 
-                {/* Product Name */}
-                <div>
-                  <h1 className="text-4xl font-bold text-gray-900 mb-2 leading-tight">
+                {/* Premium Product Name */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="space-y-4"
+                >
+                  <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 leading-tight">
                     {product.name}
                   </h1>
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <div className="flex items-center">
+                  
+                  {/* Rating and Reviews */}
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-1">
                       {[...Array(5)].map((_, i) => (
-                        <FiStar
+                        <motion.div
                           key={i}
-                          className={`w-4 h-4 ${
-                            i < 4 ? "text-yellow-400 fill-current" : "text-gray-300"
-                          }`}
-                        />
+                          initial={{ opacity: 0, scale: 0 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: 0.2 + i * 0.05 }}
+                        >
+                          <FiStar
+                            className={`w-4 h-4 ${
+                              i < 4 ? "text-yellow-400 fill-current" : "text-gray-300"
+                            }`}
+                          />
+                        </motion.div>
                       ))}
                     </div>
-                    <span className="text-sm">(4.8/5) • 127 reviews</span>
+                    <span className="text-sm text-gray-600 font-medium">4.8 (127 reviews)</span>
+                    <div className="h-1 w-1 bg-gray-400 rounded-full"></div>
+                    <span className="text-sm text-gray-600">In Stock</span>
                   </div>
-                </div>
+                </motion.div>
 
-                {/* Price Section */}
-                <div className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-indigo-50 p-8 rounded-3xl border border-gray-100 shadow-sm">
-                  {/* Decorative background elements */}
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-100/30 to-purple-100/30 rounded-full -translate-y-16 translate-x-16"></div>
-                  <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-pink-100/30 to-orange-100/30 rounded-full translate-y-12 -translate-x-12"></div>
-                  
+                {/* Premium Price Section */}
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="bg-gradient-to-br from-gray-50 to-white p-6 rounded-2xl border border-gray-100"
+                >
                   <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">
-                        {isShop ? "Wholesale Price" : "Price"}
-                      </p>
-                      {isShop && (
-                        <div className="bg-gradient-to-r from-emerald-500 to-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-sm">
-                          Wholesale
+                    {/* Price Header */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
+                          {isShop ? "Wholesale Price" : "Price"}
+                        </span>
+                        {isShop && (
+                          <span className="px-2 py-1 text-xs font-bold bg-emerald-100 text-emerald-700 rounded-full">
+                            Wholesale
+                          </span>
+                        )}
+                      </div>
+                      {isShop && product.wholesalePrice && product.price > product.wholesalePrice && (
+                        <div className="flex items-center gap-1">
+                          <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                          <span className="text-xs font-medium text-green-600">
+                            Save ₹{product.price - product.wholesalePrice}
+                          </span>
                         </div>
                       )}
                     </div>
                     
-                    <div className="flex items-baseline gap-3">
-                      <span className="text-5xl font-black bg-gradient-to-r from-gray-900 via-indigo-900 to-purple-900 bg-clip-text text-transparent">
-                          ₹{isShop && product.wholesalePrice ? product.wholesalePrice : product.price}
-                        </span>
-                        {isShop && product.wholesalePrice && product.price > product.wholesalePrice && (
-                        <span className="text-xl text-gray-400 line-through font-medium">
-                            ₹{product.price}
-                          </span>
-                        )}
-                      </div>
-                    
-                      {isShop && product.wholesalePrice && product.price > product.wholesalePrice && (
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                        <p className="text-sm font-semibold text-green-700">
-                          Save ₹{product.price - product.wholesalePrice} per item
-                        </p>
-                      </div>
-                    )}
+                     {/* Price Display */}
+                     <div className="space-y-2">
+                       {isShop ? (
+                         // Wholesale user - show wholesale price with fallback
+                         <div className="space-y-2">
+                           {/* Regular Price - Crossed Out */}
+                           <div className="flex items-center gap-2">
+                             <span className="text-lg text-gray-400 line-through font-medium">
+                               ₹{product.price}
+                             </span>
+                             <span className="px-2 py-1 text-xs font-bold bg-gray-100 text-gray-600 rounded-full">
+                               Regular Price
+                             </span>
+                           </div>
+                           
+                           {/* Wholesale Price */}
+                           <div className="flex items-center gap-2">
+                             <span className="text-3xl lg:text-4xl font-bold text-gray-900">
+                               ₹{product.wholesalePrice || 1999}
+                             </span>
+                             <span className="px-2 py-1 text-xs font-bold bg-emerald-100 text-emerald-700 rounded-full">
+                               Wholesale Price
+                             </span>
+                           </div>
+                           
+                           {/* Savings */}
+                           <div className="flex items-center gap-1">
+                             <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                             <span className="text-sm font-semibold text-green-600">
+                               You save ₹{product.price - (product.wholesalePrice || 1999)} per item
+                             </span>
+                           </div>
+                           
+                           {/* Minimum Quantity */}
+                           <div className="flex items-center gap-1">
+                             <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                             <span className="text-sm font-medium text-blue-600">
+                               Minimum quantity: {product.wholesaleMinQty || 30} units
+                             </span>
+                           </div>
+                         </div>
+                       ) : (
+                         // Regular user - show regular price
+                         <div className="flex items-center gap-2">
+                           <span className="text-3xl lg:text-4xl font-bold text-gray-900">
+                             ₹{product.price}
+                           </span>
+                           <span className="px-2 py-1 text-xs font-bold bg-blue-100 text-blue-700 rounded-full">
+                             Regular Price
+                           </span>
+                         </div>
+                       )}
+                     </div>
                   </div>
-                </div>
+                </motion.div>
 
                 {/* Quantity Selector */}
                 {product.inStock && (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-semibold text-gray-900">Quantity</h3>
+                      <span className="text-sm font-semibold text-gray-700">Quantity</span>
+                      <span className="text-xs text-gray-500">
+                        {product.stock} available
+                      </span>
                     </div>
                     
                     <div className="relative">
-                      <div className="flex items-center bg-white border-2 border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group focus-within:border-indigo-500 focus-within:ring-4 focus-within:ring-indigo-100">
+                    <div className="flex items-center bg-white border border-gray-200 rounded-xl overflow-hidden w-fit">
                       <motion.button
                         whileTap={{ scale: 0.95 }}
                           onClick={() => {
@@ -721,14 +858,14 @@ export default function ProductDetailPage() {
                             }
                           }}
                           disabled={updatingCart}
-                          className="px-6 py-4 text-gray-600 hover:text-gray-800 hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed group-hover:bg-gray-50"
+                          className="p-3 text-gray-600 hover:text-gray-800 hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50"
                         >
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
                           </svg>
                       </motion.button>
                         
-                        <div className="flex-1 px-4 py-4 text-center">
+                        <div className="px-4 py-3 min-w-[60px] text-center">
                       <input
                         type="number"
                         min="1"
@@ -742,7 +879,7 @@ export default function ProductDetailPage() {
                               }
                             }}
                             disabled={updatingCart}
-                            className="w-full text-center border-0 focus:ring-0 text-2xl font-bold text-gray-900 bg-transparent disabled:opacity-50"
+                            className="w-full text-center text-lg font-semibold bg-transparent border-none outline-none text-gray-900"
                           />
                         </div>
                         
@@ -757,7 +894,7 @@ export default function ProductDetailPage() {
                             }
                           }}
                           disabled={updatingCart}
-                          className="px-6 py-4 text-gray-600 hover:text-gray-800 hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed group-hover:bg-gray-50"
+                          className="p-3 text-gray-600 hover:text-gray-800 hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50"
                         >
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -775,97 +912,186 @@ export default function ProductDetailPage() {
                   </div>
                 )}
 
-                {/* Action Buttons */}
-                <div className="space-y-6">
-                  {cartItem ? (
-                    // Product is in cart - show premium cart management buttons
-                <div className="space-y-4">
-                      <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 rounded-3xl border border-indigo-100">
-                        <div className="flex items-center gap-3 mb-4">
-                          <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
-                            <FiShoppingCart className="w-4 h-4 text-white" />
-                          </div>
-                          <div>
-                            <h3 className="font-semibold text-gray-900">Item in Cart</h3>
-                            <p className="text-sm text-gray-600">Quantity: {cartItem.quantity}</p>
-                          </div>
-                        </div>
-                        
-                        <div className="flex flex-col sm:flex-row gap-3">
-                          <motion.button
-                            whileTap={{ scale: 0.98 }}
-                            onClick={() => navigate('/cart')}
-                            className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-4 rounded-2xl hover:shadow-xl hover:from-indigo-700 hover:to-purple-700 flex items-center justify-center gap-3 font-semibold text-lg transition-all duration-300 transform hover:scale-[1.02]"
-                          >
-                            <FiShoppingCart className="w-5 h-5" />
-                            View Cart
-                            <div className="bg-white/20 px-2 py-1 rounded-lg text-sm font-bold">
-                              {cartItem.quantity}
-                            </div>
-                          </motion.button>
-                          
-                          <motion.button
-                            whileTap={{ scale: 0.98 }}
-                            onClick={removeFromCart}
-                            disabled={updatingCart}
-                            className="flex-1 bg-gradient-to-r from-red-500 to-pink-500 text-white px-6 py-4 rounded-2xl hover:shadow-xl hover:from-red-600 hover:to-pink-600 disabled:opacity-50 flex items-center justify-center gap-3 font-semibold text-lg transition-all duration-300 transform hover:scale-[1.02] disabled:transform-none"
-                          >
-                            <FiTrash2 className="w-5 h-5" />
-                            Remove
-                          </motion.button>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    // Product not in cart - show premium add to cart button
-                    <motion.button
-                      whileTap={{ scale: 0.98 }}
-                      onClick={addToCart}
-                      disabled={!product.inStock || updatingCart}
-                      className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-5 rounded-2xl hover:shadow-xl hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 flex items-center justify-center gap-3 font-semibold text-xl transition-all duration-300 transform hover:scale-[1.02] disabled:transform-none"
-                    >
-                      <FiShoppingCart className="w-6 h-6" />
-                      {updatingCart ? 'Adding to Cart...' : 'Add to Cart'}
-                      {updatingCart && (
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      )}
-                    </motion.button>
-                  )}
-                  
-                  {/* Buy Now Button */}
-                    <motion.button
-                      whileTap={{ scale: 0.98 }}
-                      onClick={handleBuyNow}
-                      disabled={!product.inStock}
-                    className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white px-8 py-5 rounded-2xl hover:shadow-xl hover:from-orange-600 hover:to-red-600 disabled:opacity-50 font-semibold text-xl transition-all duration-300 transform hover:scale-[1.02] disabled:transform-none flex items-center justify-center gap-3"
-                    >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                      Buy Now
-                    </motion.button>
-                  </div>
+                 {/* Modern Action Buttons */}
+                 <div className="space-y-4">
+                   {cartItem ? (
+                     // Product is in cart - show premium cart management
+                     <div className="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 p-6 rounded-3xl border border-indigo-100 shadow-lg">
+                       <div className="flex items-center gap-4 mb-6">
+                         <div className="w-12 h-12 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                           <FiShoppingCart className="w-6 h-6 text-white" />
+                         </div>
+                         <div>
+                           <h3 className="text-lg font-bold text-gray-900">Item Added to Cart</h3>
+                           <p className="text-sm text-gray-600">Quantity: {cartItem.quantity} • Ready for checkout</p>
+                         </div>
+                         <div className="ml-auto">
+                           <div className="bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full border border-indigo-200">
+                             <span className="text-sm font-bold text-indigo-700">{cartItem.quantity}</span>
+                           </div>
+                         </div>
+                       </div>
+                       
+                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                         <motion.button
+                           whileHover={{ scale: 1.02, y: -2 }}
+                           whileTap={{ scale: 0.98 }}
+                           onClick={() => navigate('/cart')}
+                           className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-4 rounded-2xl hover:shadow-xl hover:from-indigo-700 hover:to-purple-700 flex items-center justify-center gap-3 font-semibold text-lg transition-all duration-300 shadow-lg"
+                         >
+                           <FiShoppingCart className="w-5 h-5" />
+                           View Cart
+                           <div className="bg-white/20 px-2 py-1 rounded-lg text-sm font-bold">
+                             {cartItem.quantity}
+                           </div>
+                         </motion.button>
+                         
+                         <motion.button
+                           whileHover={{ scale: 1.02, y: -2 }}
+                           whileTap={{ scale: 0.98 }}
+                           onClick={removeFromCart}
+                           disabled={updatingCart}
+                           className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-6 py-4 rounded-2xl hover:shadow-xl hover:from-red-600 hover:to-pink-600 disabled:opacity-50 flex items-center justify-center gap-3 font-semibold text-lg transition-all duration-300 shadow-lg disabled:transform-none"
+                         >
+                           <FiTrash2 className="w-5 h-5" />
+                           Remove
+                           {updatingCart && (
+                             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                           )}
+                         </motion.button>
+                       </div>
+                     </div>
+                   ) : (
+                     // Product not in cart - show premium add to cart button
+                     <motion.button
+                       whileHover={{ scale: 1.02, y: -2 }}
+                       whileTap={{ scale: 0.98 }}
+                       onClick={addToCart}
+                       disabled={!product.inStock || updatingCart}
+                       className="w-full bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white px-8 py-5 rounded-2xl hover:shadow-2xl hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 disabled:opacity-50 flex items-center justify-center gap-4 font-bold text-xl transition-all duration-300 shadow-xl disabled:transform-none"
+                     >
+                       <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                         <FiShoppingCart className="w-5 h-5" />
+                       </div>
+                       <span>{updatingCart ? 'Adding to Cart...' : 'Add to Cart'}</span>
+                       {updatingCart && (
+                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                       )}
+                       {!updatingCart && (
+                         <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                       )}
+                     </motion.button>
+                   )}
+                   
+                   {/* Buy Now Button */}
+                   <motion.button
+                     whileHover={{ scale: 1.02, y: -2 }}
+                     whileTap={{ scale: 0.98 }}
+                     onClick={handleBuyNow}
+                     disabled={!product.inStock}
+                     className="w-full bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 text-white px-8 py-5 rounded-2xl hover:shadow-2xl hover:from-orange-600 hover:via-red-600 hover:to-pink-600 disabled:opacity-50 font-bold text-xl transition-all duration-300 shadow-xl disabled:transform-none flex items-center justify-center gap-4"
+                   >
+                     <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                       </svg>
+                     </div>
+                     <span>Buy Now</span>
+                     <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                   </motion.button>
 
-                  {/* Wholesale Inquiry Button (for shop users) */}
-                  {isShop && (
-                    <motion.button
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => setShowWholesaleForm(true)}
-                      className="w-full bg-gradient-to-r from-emerald-500 to-green-600 text-white px-8 py-5 rounded-2xl hover:shadow-xl hover:from-emerald-600 hover:to-green-700 font-semibold text-xl transition-all duration-300 transform hover:scale-[1.02] flex items-center justify-center gap-3"
-                    >
-                      <FiMail className="w-6 h-6" />
-                      Wholesale Inquiry
-                    </motion.button>
-                  )}
+                   {/* Wholesale Inquiry Button (for shop users) */}
+                   {isShop && (
+                     <motion.button
+                       whileHover={{ scale: 1.02, y: -2 }}
+                       whileTap={{ scale: 0.98 }}
+                       onClick={() => setShowWholesaleForm(true)}
+                       className="w-full bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 text-white px-8 py-5 rounded-2xl hover:shadow-2xl hover:from-emerald-600 hover:via-green-600 hover:to-teal-600 font-bold text-xl transition-all duration-300 shadow-xl flex items-center justify-center gap-4"
+                     >
+                       <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                         <FiMail className="w-5 h-5" />
+                       </div>
+                       <span>Wholesale Inquiry</span>
+                       <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                     </motion.button>
+                   )}
+                 </div>
 
 
-                {/* Description */}
-                {product.description && (
-                  <div className="pt-4 border-t border-gray-200">
-                    <h3 className="text-lg font-semibold mb-3 text-gray-900">Description</h3>
-                    <p className="text-gray-600 leading-relaxed">{product.description}</p>
-                  </div>
-                )}
+                 {/* Modern Description Section */}
+                 {product.description && (
+                   <motion.div 
+                     initial={{ opacity: 0, y: 20 }}
+                     animate={{ opacity: 1, y: 0 }}
+                     transition={{ delay: 0.5 }}
+                     className="bg-gradient-to-br from-gray-50 via-white to-gray-50 p-8 rounded-3xl border border-gray-100 shadow-lg"
+                   >
+                     <div className="flex items-center gap-4 mb-6">
+                       <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
+                         <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                         </svg>
+                       </div>
+                       <div>
+                         <h3 className="text-xl font-bold text-gray-900">Product Description</h3>
+                         <p className="text-sm text-gray-600">Detailed information about this product</p>
+                       </div>
+                     </div>
+                     
+                     <div className="prose prose-lg prose-gray max-w-none">
+                       <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-gray-100 shadow-sm">
+                         <p className="text-gray-700 leading-relaxed text-base font-medium">
+                           {product.description}
+                         </p>
+                       </div>
+                     </div>
+                     
+                     {/* Additional Info Cards */}
+                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                       <div className="bg-white/60 backdrop-blur-sm p-4 rounded-xl border border-gray-100 shadow-sm">
+                         <div className="flex items-center gap-3">
+                           <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                             <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                             </svg>
+                           </div>
+                           <div>
+                             <p className="text-sm font-semibold text-gray-900">Quality Assured</p>
+                             <p className="text-xs text-gray-600">Premium materials</p>
+                           </div>
+                         </div>
+                       </div>
+                       
+                       <div className="bg-white/60 backdrop-blur-sm p-4 rounded-xl border border-gray-100 shadow-sm">
+                         <div className="flex items-center gap-3">
+                           <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                             <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                             </svg>
+                           </div>
+                           <div>
+                             <p className="text-sm font-semibold text-gray-900">Fast Delivery</p>
+                             <p className="text-xs text-gray-600">Quick shipping</p>
+                           </div>
+                         </div>
+                       </div>
+                       
+                       <div className="bg-white/60 backdrop-blur-sm p-4 rounded-xl border border-gray-100 shadow-sm">
+                         <div className="flex items-center gap-3">
+                           <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
+                             <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                             </svg>
+                           </div>
+                           <div>
+                             <p className="text-sm font-semibold text-gray-900">Customer Love</p>
+                             <p className="text-xs text-gray-600">Highly rated</p>
+                           </div>
+                         </div>
+                       </div>
+                     </div>
+                   </motion.div>
+                 )}
               </div>
             </div>
           </div>
@@ -906,40 +1132,120 @@ export default function ProductDetailPage() {
           </div>
         </div>
 
-        {/* Related Products */}
+        {/* Enhanced Related Products */}
         {relatedProducts.length > 0 && (
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Related Products</h2>
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="glass-card p-8"
+          >
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-3">
+                <div className="h-2 w-8 rounded-full gradient-primary"></div>
+                <h2 className="text-3xl font-bold text-gradient">Related Products</h2>
+              </div>
+              <div className="text-sm text-gray-600 font-medium">
+                {relatedProducts.length} {relatedProducts.length === 1 ? 'item' : 'items'}
+              </div>
+            </div>
+            
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-              {relatedProducts.map((relatedProduct) => (
+              {relatedProducts.map((relatedProduct, index) => (
                 <motion.div
                   key={relatedProduct._id}
-                  whileHover={{ y: -5 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  whileHover={{ y: -8, scale: 1.02 }}
                   onClick={() => navigate(`/product/${relatedProduct._id}`)}
-                  className="bg-white rounded-xl shadow-sm hover:shadow-md overflow-hidden cursor-pointer border border-gray-100 transition-all duration-200"
+                  className="product-card group cursor-pointer"
                 >
-                  <div className="aspect-w-1 aspect-h-1 bg-gray-200">
-                    <img
-                      src={relatedProduct.images?.[0] || "/placeholder.png"}
-                      alt={relatedProduct.name}
-                      className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2 text-sm">
-                      {relatedProduct.name}
-                    </h3>
-                    <p className="text-lg font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                      ₹
-                      {isShop && relatedProduct.wholesalePrice
-                        ? relatedProduct.wholesalePrice
-                        : relatedProduct.price}
-                    </p>
+                  <div className="relative overflow-hidden">
+                    {/* Image Container */}
+                    <div className="relative bg-gradient-to-br from-gray-50 to-gray-100 aspect-square overflow-hidden">
+                      <img
+                        src={relatedProduct.images?.[0] || "/placeholder.png"}
+                        alt={relatedProduct.name}
+                        className="w-full h-full object-cover transition-all duration-500 group-hover:scale-110"
+                      />
+                      
+                      {/* Gradient Overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      
+                      {/* Quick Actions Overlay */}
+                      <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                        <div className="flex flex-col gap-2">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); }}
+                            className="p-2 rounded-full backdrop-blur-sm bg-white/90 text-gray-700 hover:bg-white shadow-md transition-all duration-200"
+                          >
+                            <FiHeart className="text-sm" />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Stock Badge */}
+                      {relatedProduct.stock <= 5 && relatedProduct.stock > 0 && (
+                        <div className="absolute top-3 left-3">
+                          <span className="px-2 py-1 text-xs font-semibold bg-orange-500 text-white rounded-full shadow-lg">
+                            Only {relatedProduct.stock} left!
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Product Info */}
+                    <div className="p-4">
+                      <h3 className="font-bold text-gray-900 mb-2 line-clamp-2 text-sm group-hover:text-gradient transition-colors duration-200">
+                        {relatedProduct.name}
+                      </h3>
+                      
+                      {/* Price Section */}
+                      <div className="mb-3">
+                         <div className="flex items-center gap-2 mb-1">
+                           <span className="text-lg font-bold text-gradient">
+                             ₹{isShop ? (relatedProduct.wholesalePrice || 1999) : relatedProduct.price}
+                           </span>
+                           {isShop && (
+                             <span className="text-xs text-gray-500 line-through">
+                               ₹{relatedProduct.price}
+                             </span>
+                           )}
+                         </div>
+                         {isShop && (
+                           <span className="text-xs text-green-600 font-medium">
+                             Wholesale Price
+                           </span>
+                         )}
+                      </div>
+
+                      {/* Quick Add Button */}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); }}
+                        className="btn-primary w-full py-2 text-sm"
+                      >
+                        <FiShoppingCart className="inline mr-2" />
+                        Quick Add
+                      </button>
+                    </div>
                   </div>
                 </motion.div>
               ))}
             </div>
-          </div>
+            
+            {/* View All Button */}
+            <div className="mt-8 text-center">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => navigate('/store')}
+                className="btn-secondary px-8 py-3"
+              >
+                View All Products
+              </motion.button>
+            </div>
+          </motion.div>
         )}
       </div>
 
@@ -1004,17 +1310,20 @@ export default function ProductDetailPage() {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Quantity *</label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={wholesaleForm.quantity}
-                    onChange={(e) => setWholesaleForm(prev => ({ ...prev, quantity: parseInt(e.target.value) || 1 }))}
-                    required
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  />
-                </div>
+                 <div>
+                   <label className="block text-sm font-medium text-gray-700 mb-1">Quantity *</label>
+                   <input
+                     type="number"
+                     min={product?.wholesaleMinQty || 30}
+                     value={wholesaleForm.quantity}
+                     onChange={(e) => setWholesaleForm(prev => ({ ...prev, quantity: parseInt(e.target.value) || (product?.wholesaleMinQty || 30) }))}
+                     required
+                     className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                   />
+                   <p className="text-xs text-gray-500 mt-1">
+                     Minimum quantity: {product?.wholesaleMinQty || 30} units
+                   </p>
+                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Message *</label>

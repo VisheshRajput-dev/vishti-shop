@@ -3,6 +3,7 @@ import { auth } from '../../firebase';
 import { sendPasswordResetEmail, sendEmailVerification } from 'firebase/auth';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import Loader from '../../components/Loader';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -87,62 +88,97 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-100 via-purple-100 to-indigo-200 flex items-center justify-center p-4">
+    <div className="min-h-screen animated-gradient flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background Elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/10 rounded-full blur-3xl float"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-white/10 rounded-full blur-3xl float" style={{animationDelay: '2s'}}></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-white/5 rounded-full blur-3xl pulse-slow"></div>
+      </div>
+
       {loading && <Loader />}
-      <div className="bg-white shadow-xl rounded-lg w-full max-w-md p-8">
-        <h2 className="text-3xl font-bold text-center text-indigo-600 mb-8">Welcome Back</h2>
+      
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="glass-card w-full max-w-md p-8 relative z-10"
+      >
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-3 mb-4">
+            <div className="h-12 w-12 rounded-2xl gradient-primary shadow-lg flex items-center justify-center">
+              <span className="text-white font-bold text-xl">V</span>
+            </div>
+            <h1 className="text-3xl font-bold text-gradient">Vishti Shop</h1>
+          </div>
+          <p className="text-gray-600">Welcome back! Please sign in to your account</p>
+        </div>
+
         <form onSubmit={handleLogin} className="space-y-6">
-          <input 
-            value={email} 
-            onChange={(e) => setEmail(e.target.value)} 
-            placeholder="Gmail" 
-            className="input" 
-          />
-          <input 
-            type="password" 
-            value={password} 
-            onChange={(e) => setPassword(e.target.value)} 
-            placeholder="Password" 
-            className="input" 
-          />
-          <div className="flex justify-between items-center">
-            <button 
-              type="submit" 
-              className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg"
-            >
-              Login
-            </button>
-            <div className="flex flex-col items-end space-y-1">
-              <button 
-                type="button" 
-                onClick={handleForgot} 
-                className="text-sm text-pink-600 hover:underline"
-              >
-                Forgot password?
-              </button>
-              <button 
-                type="button" 
-                onClick={handleResendVerification} 
-                className="text-sm text-blue-600 hover:underline"
-              >
-                Resend verification email
-              </button>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+              <input 
+                value={email} 
+                onChange={(e) => setEmail(e.target.value)} 
+                placeholder="Enter your email" 
+                className="input" 
+                type="email"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+              <input 
+                type="password" 
+                value={password} 
+                onChange={(e) => setPassword(e.target.value)} 
+                placeholder="Enter your password" 
+                className="input" 
+                required
+              />
             </div>
           </div>
-          <div className="text-center mt-4">
-            <p className="text-gray-600">
-              Don't have an account?{' '}
-              <button 
-                type="button"
-                onClick={() => navigate('/signup')}
-                className="text-indigo-600 hover:underline font-medium"
-              >
-                Sign up
-              </button>
+
+          <button 
+            type="submit" 
+            className="btn-primary w-full"
+          >
+            Sign In
+          </button>
+
+          <div className="flex justify-between items-center">
+            <button 
+              type="button" 
+              onClick={handleForgot} 
+              className="btn-ghost text-sm"
+            >
+              Forgot password?
+            </button>
+            <button 
+              type="button" 
+              onClick={handleResendVerification} 
+              className="btn-ghost text-sm"
+            >
+              Resend verification email
+            </button>
+          </div>
+
+          <div className="text-center pt-4 border-t border-gray-200">
+            <p className="text-gray-600 mb-4">
+              Don't have an account?
             </p>
+            <button 
+              type="button"
+              onClick={() => navigate('/signup')}
+              className="btn-secondary w-full"
+            >
+              Create Account
+            </button>
           </div>
         </form>
-      </div>
+      </motion.div>
     </div>
   );
 }
