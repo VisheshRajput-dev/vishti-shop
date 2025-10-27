@@ -21,6 +21,10 @@ router.post('/create-order', verifyFirebaseToken, async (req, res) => {
       return res.status(400).json({ message: 'Invalid amount' });
     }
 
+    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+      return res.status(500).json({ message: 'Payment service not configured' });
+    }
+
     const options = {
       amount: Math.round(amount * 100), // Razorpay expects amount in paise
       currency,
@@ -37,8 +41,10 @@ router.post('/create-order', verifyFirebaseToken, async (req, res) => {
       currency: order.currency
     });
   } catch (error) {
-    console.error('Error creating Razorpay order:', error);
-    res.status(500).json({ message: 'Failed to create payment order' });
+    console.error('Error creating Razorpay order:', error.message);
+    res.status(500).json({ 
+      message: 'Failed to create payment order'
+    });
   }
 });
 

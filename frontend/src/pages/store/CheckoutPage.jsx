@@ -264,8 +264,14 @@ export default function CheckoutPage() {
       };
       
              // Initialize Razorpay
+       const razorpayKeyId = import.meta.env.VITE_RAZORPAY_KEY_ID;
+       
+       if (!razorpayKeyId) {
+         throw new Error('Razorpay Key ID not found. Please check your environment variables.');
+       }
+       
        const options = {
-         key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_YOUR_KEY_ID', // Replace with your key
+         key: razorpayKeyId,
         amount: Math.round(total * 100), // Amount in paise
         currency: 'INR',
         name: 'Vishti Shop',
@@ -426,6 +432,69 @@ export default function CheckoutPage() {
                 <div className="flex justify-between text-lg font-bold text-gray-900 border-t border-gray-200 pt-3">
                   <span>Total</span>
                   <span>₹{total.toLocaleString()}</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Demo Credit Card Credentials */}
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-200 p-6">
+              <div className="flex items-start gap-3 mb-4">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-blue-800 mb-1">Demo Payment Credentials</h3>
+                  <p className="text-sm text-blue-600">Use these test credentials for portfolio demonstration</p>
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="bg-white rounded-xl p-4 border border-blue-100">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-gray-600">Card Type</span>
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-4 bg-gradient-to-r from-red-500 to-yellow-500 rounded-sm"></div>
+                      <span className="text-sm font-semibold text-gray-800">Mastercard</span>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Card Number</span>
+                      <div className="flex items-center gap-2">
+                        <code className="text-sm font-mono bg-gray-100 px-2 py-1 rounded">2305 3242 5784 8228</code>
+                        <button
+                          onClick={() => navigator.clipboard.writeText('2305 3242 5784 8228')}
+                          className="text-blue-600 hover:text-blue-800 transition-colors"
+                          title="Copy card number"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">CVV</span>
+                      <code className="text-sm font-mono bg-gray-100 px-2 py-1 rounded">Any 3 digits</code>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Expiry Date</span>
+                      <code className="text-sm font-mono bg-gray-100 px-2 py-1 rounded">Any future date</code>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3">
+                  <div className="flex items-start gap-2">
+                    <svg className="w-4 h-4 text-yellow-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                    <p className="text-xs text-yellow-700">
+                      <strong>Note:</strong> This is a test environment. No real money will be charged.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -707,31 +776,96 @@ export default function CheckoutPage() {
             </motion.button>
             
             {/* Order Summary on Mobile */}
-            <div className="lg:hidden bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Order Total</h3>
-              <div className="space-y-2">
-                <div className="flex justify-between text-gray-600">
-                  <span>Subtotal</span>
-                  <span>₹{subtotal.toLocaleString()}</span>
-                </div>
-                {!isWholesale && (
+            <div className="lg:hidden space-y-4">
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Order Total</h3>
+                <div className="space-y-2">
                   <div className="flex justify-between text-gray-600">
-                    <span>Shipping</span>
-                    <span>
-                      {subtotal >= 1000 && deliveryOption === 'normal' 
-                        ? 'Free' 
-                        : `₹${shippingCost.toLocaleString()}`
-                      }
-                    </span>
+                    <span>Subtotal</span>
+                    <span>₹{subtotal.toLocaleString()}</span>
                   </div>
-                )}
-                <div className="flex justify-between text-gray-600">
-                  <span>GST (18%)</span>
-                  <span>₹{gst.toLocaleString()}</span>
+                  {!isWholesale && (
+                    <div className="flex justify-between text-gray-600">
+                      <span>Shipping</span>
+                      <span>
+                        {subtotal >= 1000 && deliveryOption === 'normal' 
+                          ? 'Free' 
+                          : `₹${shippingCost.toLocaleString()}`
+                        }
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-gray-600">
+                    <span>GST (18%)</span>
+                    <span>₹{gst.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between text-lg font-bold text-gray-900 border-t border-gray-200 pt-2">
+                    <span>Total</span>
+                    <span>₹{total.toLocaleString()}</span>
+                  </div>
                 </div>
-                <div className="flex justify-between text-lg font-bold text-gray-900 border-t border-gray-200 pt-2">
-                  <span>Total</span>
-                  <span>₹{total.toLocaleString()}</span>
+              </div>
+              
+              {/* Demo Credit Card Credentials - Mobile */}
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-200 p-4">
+                <div className="flex items-start gap-3 mb-3">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center">
+                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-blue-800 mb-1">Demo Payment</h3>
+                    <p className="text-xs text-blue-600">Test credentials for portfolio</p>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <div className="bg-white rounded-lg p-3 border border-blue-100">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-600">Card</span>
+                        <div className="flex items-center gap-1">
+                          <div className="w-4 h-3 bg-gradient-to-r from-red-500 to-yellow-500 rounded-sm"></div>
+                          <span className="text-xs font-semibold text-gray-800">Mastercard</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-600">Number</span>
+                        <div className="flex items-center gap-1">
+                          <code className="text-xs font-mono bg-gray-100 px-1 py-0.5 rounded">2305 3242 5784 8228</code>
+                          <button
+                            onClick={() => navigator.clipboard.writeText('2305 3242 5784 8228')}
+                            className="text-blue-600 hover:text-blue-800 transition-colors"
+                            title="Copy"
+                          >
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-600">CVV</span>
+                        <code className="text-xs font-mono bg-gray-100 px-1 py-0.5 rounded">Any 3 digits</code>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-600">Expiry</span>
+                        <code className="text-xs font-mono bg-gray-100 px-1 py-0.5 rounded">Any future date</code>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-2">
+                    <div className="flex items-start gap-1">
+                      <svg className="w-3 h-3 text-yellow-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                      </svg>
+                      <p className="text-xs text-yellow-700">
+                        <strong>Note:</strong> Test environment - no real charges
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

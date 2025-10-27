@@ -98,6 +98,15 @@ router.get('/dashboard/top-products', verifyFirebaseToken, requireAdmin, async (
     // Combine data
     const topProductsWithDetails = topProducts.map(item => {
       const product = products.find(p => p._id.toString() === item._id.toString());
+      if (!product) {
+        return {
+          _id: item._id,
+          name: 'Product Not Found',
+          price: 0,
+          totalSold: item.totalSold,
+          totalRevenue: item.totalRevenue
+        };
+      }
       return {
         ...product.toObject(),
         totalSold: item.totalSold,

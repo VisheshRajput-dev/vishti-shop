@@ -42,25 +42,32 @@ export default function Categories() {
         client.get('/api/categories'),
         client.get('/api/products')
       ]);
-      setCategories(categoriesResponse.data);
-      setProducts(productsResponse.data);
+      
+      // Ensure data is properly structured
+      setCategories(Array.isArray(categoriesResponse.data) ? categoriesResponse.data : []);
+      setProducts(Array.isArray(productsResponse.data) ? productsResponse.data : []);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Failed to load data');
+      // Set empty arrays as fallback
+      setCategories([]);
+      setProducts([]);
     } finally {
       setLoading(false);
     }
   };
 
   const filteredProducts = products.filter(product => {
+    if (!product || !product.name) return false;
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.description?.toLowerCase().includes(searchTerm.toLowerCase());
+                         (product.description && product.description.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
   const getProductsInCategory = (categoryId) => {
-    return products.filter(product => product.category === categoryId).length;
+    if (!Array.isArray(products)) return 0;
+    return products.filter(product => product && product.category === categoryId).length;
   };
 
   const handleAddCategory = async () => {
@@ -192,54 +199,58 @@ export default function Categories() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {categories.map((category, index) => (
-                    <motion.div
-                      key={category._id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className={`p-4 rounded-xl border transition-all duration-200 cursor-pointer ${
-                        selectedCategory === category._id
-                          ? 'border-indigo-300 bg-indigo-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                      onClick={() => setSelectedCategory(category._id)}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-gray-900">{category.name}</h3>
-                          <p className="text-sm text-gray-600 mt-1">
-                            {getProductsInCategory(category._id)} products
-                          </p>
-                          {category.description && (
-                            <p className="text-xs text-gray-500 mt-1 line-clamp-2">
-                              {category.description}
+                  {categories.map((category, index) => {
+                    if (!category || !category._id) return null;
+                    
+                    return (
+                      <motion.div
+                        key={category._id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className={`p-4 rounded-xl border transition-all duration-200 cursor-pointer ${
+                          selectedCategory === category._id
+                            ? 'border-indigo-300 bg-indigo-50'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                        onClick={() => setSelectedCategory(category._id)}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-gray-900">{category.name || 'Unnamed Category'}</h3>
+                            <p className="text-sm text-gray-600 mt-1">
+                              {getProductsInCategory(category._id)} products
                             </p>
-                          )}
+                            {category.description && (
+                              <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                                {category.description}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openEditModal(category);
+                              }}
+                              className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
+                            >
+                              <FiEdit3 className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteCategory(category._id);
+                              }}
+                              className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
+                            >
+                              <FiTrash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openEditModal(category);
-                            }}
-                            className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
-                          >
-                            <FiEdit3 className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteCategory(category._id);
-                            }}
-                            className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
-                          >
-                            <FiTrash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
+                      </motion.div>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -273,42 +284,49 @@ export default function Categories() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {filteredProducts.map((product, index) => (
-                    <motion.div
-                      key={product._id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow"
-                    >
-                      <div className="flex items-start gap-4">
-                        <img
-                          src={product.images?.[0]}
-                          alt={product.name}
-                          className="w-16 h-16 object-cover rounded-lg"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-gray-900 line-clamp-2">
-                            {product.name}
-                          </h3>
-                          <p className="text-sm text-gray-600 mt-1">
-                            ₹{product.price.toLocaleString()}
-                          </p>
-                          <p className="text-xs text-gray-500 mt-1 line-clamp-2">
-                            {product.description}
-                          </p>
-                          <div className="flex items-center gap-2 mt-2">
-                            <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
-                              {categories.find(c => c._id === product.category)?.name || 'Uncategorized'}
-                            </span>
-                            <button className="text-indigo-600 hover:text-indigo-700 text-xs font-medium">
-                              <FiEye className="w-3 h-3" />
-                            </button>
+                  {filteredProducts.map((product, index) => {
+                    if (!product || !product._id) return null;
+                    
+                    return (
+                      <motion.div
+                        key={product._id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow"
+                      >
+                        <div className="flex items-start gap-4">
+                          <img
+                            src={product.images?.[0] || '/placeholder-image.jpg'}
+                            alt={product.name || 'Product'}
+                            className="w-16 h-16 object-cover rounded-lg"
+                            onError={(e) => {
+                              e.target.src = '/placeholder-image.jpg';
+                            }}
+                          />
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-gray-900 line-clamp-2">
+                              {product.name || 'Unnamed Product'}
+                            </h3>
+                            <p className="text-sm text-gray-600 mt-1">
+                              ₹{(product.price || 0).toLocaleString()}
+                            </p>
+                            <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                              {product.description || 'No description available'}
+                            </p>
+                            <div className="flex items-center gap-2 mt-2">
+                              <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
+                                {categories.find(c => c._id === product.category)?.name || 'Uncategorized'}
+                              </span>
+                              <button className="text-indigo-600 hover:text-indigo-700 text-xs font-medium">
+                                <FiEye className="w-3 h-3" />
+                              </button>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </motion.div>
-                  ))}
+                      </motion.div>
+                    );
+                  })}
                 </div>
               )}
             </div>
