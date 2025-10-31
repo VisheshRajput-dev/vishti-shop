@@ -6,11 +6,40 @@ const verifyFirebaseToken = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.log('Auth: No token provided in request');
       return res.status(401).json({ message: 'No token provided' });
     }
 
     const token = authHeader.split('Bearer ')[1];
-    const decodedToken = await admin.auth().verifyIdToken(token);
+    
+    // Add timeout to prevent hanging
+    const verifyToken = admin.auth().verifyIdToken(token);
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Token verification timeout')), 5000)
+    );
+    
+    let decodedToken;
+    try {
+      decodedToken = await Promise.race([verifyToken, timeoutPromise]);
+    } catch (verifyError) {
+      console.error('Token verification failed:', verifyError.message);
+      console.error('Error code:', verifyError.code);
+      console.error('Error details:', verifyError.errorInfo || verifyError);
+      
+      // Check if Firebase Admin is initialized
+      try {
+        const apps = admin.apps;
+        if (!apps || apps.length === 0) {
+          console.error('CRITICAL: Firebase Admin is not initialized!');
+          return res.status(500).json({ message: 'Authentication service unavailable' });
+        }
+      } catch (appError) {
+        console.error('CRITICAL: Cannot access Firebase Admin apps:', appError);
+        return res.status(500).json({ message: 'Authentication service error' });
+      }
+      
+      return res.status(401).json({ message: 'Invalid or expired token' });
+    }
     
     // Find user in database by firebaseUid
     const dbUser = await User.findOne({ firebaseUid: decodedToken.uid });

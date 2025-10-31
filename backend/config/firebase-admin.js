@@ -24,8 +24,20 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
     const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
     
     if (projectId && privateKey && clientEmail) {
-      // Handle private key - replace escaped newlines
-      const formattedPrivateKey = privateKey.replace(/\\n/g, '\n');
+      // Handle private key - replace escaped newlines or preserve actual newlines
+      // Railway might store it with \n as literal characters or as actual newlines
+      let formattedPrivateKey = privateKey;
+      // If it contains literal \n (escaped), replace them
+      if (privateKey.includes('\\n')) {
+        formattedPrivateKey = privateKey.replace(/\\n/g, '\n');
+      }
+      // Ensure proper line breaks for BEGIN/END markers
+      if (!formattedPrivateKey.includes('\n')) {
+        // If no newlines at all, try to add them at common positions
+        formattedPrivateKey = formattedPrivateKey
+          .replace(/-----BEGIN PRIVATE KEY-----/g, '-----BEGIN PRIVATE KEY-----\n')
+          .replace(/-----END PRIVATE KEY-----/g, '\n-----END PRIVATE KEY-----');
+      }
       
       serviceAccount = {
         type: "service_account",
@@ -55,13 +67,27 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
 
 // Initialize Firebase Admin
 try {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    projectId: serviceAccount.project_id
-  });
-  console.log('Firebase Admin initialized successfully');
+  // Check if already initialized (prevent duplicate initialization)
+  if (admin.apps.length > 0) {
+    console.log('Firebase Admin already initialized, using existing instance');
+  } else {
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+      projectId: serviceAccount.project_id
+    });
+    console.log('Firebase Admin initialized successfully');
+    console.log('Project ID:', serviceAccount.project_id);
+    console.log('Client Email:', serviceAccount.client_email);
+  }
 } catch (error) {
-  console.error('Firebase Admin initialization error:', error);
+  console.error('Firebase Admin initialization error:', error.message);
+  console.error('Error stack:', error.stack);
+  console.error('Service account keys present:', {
+    hasProjectId: !!serviceAccount?.project_id,
+    hasClientEmail: !!serviceAccount?.client_email,
+    hasPrivateKey: !!serviceAccount?.private_key,
+    privateKeyLength: serviceAccount?.private_key?.length || 0
+  });
   throw error;
 }
 
