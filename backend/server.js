@@ -10,7 +10,14 @@ mongoose.set('strictQuery', false);
 const app = express();
 
 // Middleware
-app.use(cors({ origin: true, credentials: true }));
+// CORS configuration - Allow requests from frontend domains
+app.use(cors({
+  origin: [
+    'http://localhost:5173', // Local development (Vite default port)
+    'https://vishti-shop.vercel.app', // Production frontend (Vercel)
+  ],
+  credentials: true
+}));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
