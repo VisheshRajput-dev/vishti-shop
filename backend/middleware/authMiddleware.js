@@ -42,7 +42,30 @@ const verifyFirebaseToken = async (req, res, next) => {
     }
     
     // Find user in database by firebaseUid
-    const dbUser = await User.findOne({ firebaseUid: decodedToken.uid });
+    // Check MongoDB connection first
+    const mongoose = require('mongoose');
+    if (mongoose.connection.readyState !== 1) {
+      console.error('MongoDB not connected. Connection state:', mongoose.connection.readyState);
+      return res.status(503).json({ 
+        message: 'Database unavailable. Please check MongoDB Atlas network access settings.',
+        error: 'MongoDB connection not established'
+      });
+    }
+    
+    let dbUser;
+    try {
+      dbUser = await User.findOne({ firebaseUid: decodedToken.uid }).maxTimeMS(5000);
+    } catch (dbError) {
+      console.error('Database query error:', dbError.message);
+      if (dbError.name === 'MongooseError' || dbError.message.includes('buffering timed out')) {
+        return res.status(503).json({ 
+          message: 'Database connection timeout. Please check MongoDB Atlas network access.',
+          error: 'MongoDB query timeout'
+        });
+      }
+      throw dbError;
+    }
+    
     if (!dbUser) {
       // For certain routes like /register, allow the request to proceed without a database user
       if (req.path === '/register' || req.method === 'POST') {
