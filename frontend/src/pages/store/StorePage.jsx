@@ -618,22 +618,22 @@ export default function StorePage() {
                     <div className="text-xs font-semibold text-gray-500 px-3 py-2 border-b border-gray-200/50">
                       Suggestions
                     </div>
-                    {suggestions.map((suggestion, index) => (
+                  {suggestions.map((suggestion, index) => (
                       <motion.div
-                        key={index}
+                      key={index}
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.05 }}
-                        onClick={() => {
-                          setSearchTerm(suggestion);
-                          setShowSuggestions(false);
-                        }}
+                      onClick={() => {
+                        setSearchTerm(suggestion);
+                        setShowSuggestions(false);
+                      }}
                         className="px-3 py-3 hover:bg-gray-100/80 cursor-pointer rounded-lg transition-colors duration-200 flex items-center gap-2"
-                      >
+                    >
                         <FiSearch size={16} className="text-gray-400" />
                         <span className="text-gray-700">{suggestion}</span>
                       </motion.div>
-                    ))}
+                  ))}
                   </div>
                 </motion.div>
               )}
@@ -668,17 +668,17 @@ export default function StorePage() {
 
             {/* Enhanced Sort Dropdown */}
             <div className="relative">
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
                 className="appearance-none px-6 py-3 pr-10 rounded-2xl btn-secondary font-semibold cursor-pointer hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              >
-                <option value="">Sort By</option>
-                <option value="price-asc">Price: Low to High</option>
-                <option value="price-desc">Price: High to Low</option>
-                <option value="name-asc">Name: A to Z</option>
-                <option value="name-desc">Name: Z to A</option>
-              </select>
+            >
+              <option value="">Sort By</option>
+              <option value="price-asc">Price: Low to High</option>
+              <option value="price-desc">Price: High to Low</option>
+              <option value="name-asc">Name: A to Z</option>
+              <option value="name-desc">Name: Z to A</option>
+            </select>
               <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
                 <FiChevronDown className="text-gray-600" size={20} />
               </div>
@@ -721,20 +721,20 @@ export default function StorePage() {
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-3">Category</label>
                     <div className="relative">
-                      <select
-                        value={selectedCategory}
-                        onChange={(e) => setSelectedCategory(e.target.value)}
+                    <select
+                      value={selectedCategory}
+                      onChange={(e) => setSelectedCategory(e.target.value)}
                         className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 appearance-none cursor-pointer"
-                      >
-                        <option value="">All Categories</option>
-                        {categories.map(cat => (
-                          <option key={cat._id} value={cat._id}>{cat.name}</option>
-                        ))}
-                      </select>
+                    >
+                      <option value="">All Categories</option>
+                      {categories.map(cat => (
+                        <option key={cat._id} value={cat._id}>{cat.name}</option>
+                      ))}
+                    </select>
                       <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
                         <FiChevronDown className="text-gray-600" size={18} />
-                      </div>
-                    </div>
+                  </div>
+                </div>
                   </div>
 
                   <div>
@@ -778,13 +778,13 @@ export default function StorePage() {
           </div>
         ) : (
           <div className="container mx-auto px-4 py-8">
-            {/* Masonry / Pinterest-style Grid (JS-based) */}
-            <Masonry
-              breakpointCols={{ default: 5, 1280: 4, 1024: 3, 640: 2, 480: 1 }}
-              className="my-masonry-grid"
-              columnClassName="my-masonry-grid_column"
-            >
-              {filteredProducts.map((product) => (
+        {/* Masonry / Pinterest-style Grid (JS-based) */}
+        <Masonry
+          breakpointCols={{ default: 5, 1280: 4, 1024: 3, 640: 2, 480: 1 }}
+          className="my-masonry-grid"
+          columnClassName="my-masonry-grid_column"
+        >
+          {filteredProducts.map((product) => (
             <motion.div
               key={product._id}
               layout
@@ -828,7 +828,7 @@ export default function StorePage() {
                       >
                         <FiHeart className={`text-sm ${isInWishlist(product._id) ? 'fill-current' : ''}`} />
                       </button>
-                    </div>
+                      </div>
                   </div>
 
                   {/* Stock Badge */}
@@ -845,7 +845,7 @@ export default function StorePage() {
                       <span className="px-3 py-1 text-sm font-semibold bg-red-500 text-white rounded-full">
                         Out of Stock
                       </span>
-                    </div>
+                </div>
                   )}
                 </div>
                 {/* Product Info */}
@@ -858,7 +858,7 @@ export default function StorePage() {
                   <div className="mb-4">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-2xl font-bold text-gradient">
-                        ₹{getPrice(product)}
+                      ₹{getPrice(product)}
                       </span>
                       {isWholesale && product.wholesalePrice && (
                         <span className="text-sm text-gray-500 line-through">
@@ -874,35 +874,35 @@ export default function StorePage() {
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2">
                     {/* Cart Control */}
-                    {cartMap[product._id] ? (
+                      {cartMap[product._id] ? (
                       <div className="flex items-center gap-2 flex-1">
-                        <button
-                          onClick={async (e) => { e.stopPropagation(); const entry = cartMap[product._id]; await handleUpdateQty(product._id, entry.itemId, entry.quantity - 1); }}
+                          <button
+                            onClick={async (e) => { e.stopPropagation(); const entry = cartMap[product._id]; await handleUpdateQty(product._id, entry.itemId, entry.quantity - 1); }}
                           className="p-2 rounded-xl bg-gray-100 hover:bg-gray-200 transition-colors duration-200"
-                        >
+                          >
                           <FiMinus className="text-sm" />
-                        </button>
+                          </button>
                         <span className="min-w-[32px] text-center font-semibold text-gray-700">
                           {cartMap[product._id].quantity}
                         </span>
-                        <button
-                          onClick={async (e) => { e.stopPropagation(); const entry = cartMap[product._id]; await handleUpdateQty(product._id, entry.itemId, entry.quantity + 1); }}
+                          <button
+                            onClick={async (e) => { e.stopPropagation(); const entry = cartMap[product._id]; await handleUpdateQty(product._id, entry.itemId, entry.quantity + 1); }}
                           className="p-2 rounded-xl bg-gray-100 hover:bg-gray-200 transition-colors duration-200"
-                        >
+                          >
                           <FiPlus className="text-sm" />
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }}
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }}
                         className="btn-primary flex-1 py-2 text-sm"
-                      >
+                        >
                         <FiShoppingCart className="inline mr-2" />
                         Add to Cart
-                      </button>
-                    )}
+                        </button>
+                      )}
                     
                     {/* Quick Buy */}
                     <button
@@ -917,7 +917,7 @@ export default function StorePage() {
               </div>
             </motion.div>
           ))}
-            </Masonry>
+        </Masonry>
           </div>
         )}
 
@@ -988,7 +988,7 @@ export default function StorePage() {
               </div>
 
               {/* Quick Links */}
-              <div>
+          <div>
                 <h4 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
                   <div className="h-1 w-6 rounded-full gradient-primary"></div>
                   Quick Links
@@ -1010,7 +1010,7 @@ export default function StorePage() {
                       {link.name}
                     </motion.button>
                   ))}
-                </div>
+            </div>
               </div>
 
               {/* Contact Info */}
@@ -1025,13 +1025,13 @@ export default function StorePage() {
                       <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                       </svg>
-                    </div>
+              </div>
                     <div>
                       <p className="text-sm text-gray-600">Email</p>
                       <a href="mailto:support@vishtishop.com" className="text-sm text-gradient hover:underline">
                         support@vishtishop.com
                       </a>
-                    </div>
+            </div>
                   </div>
                   
                   <div className="flex items-start gap-3">
@@ -1039,8 +1039,8 @@ export default function StorePage() {
                       <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                       </svg>
-                    </div>
-                    <div>
+          </div>
+          <div>
                       <p className="text-sm text-gray-600">Phone</p>
                       <a href="tel:+91-9876543210" className="text-sm text-gradient hover:underline">
                         +91-9876543210
@@ -1054,13 +1054,13 @@ export default function StorePage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
-                    </div>
-                    <div>
+          </div>
+          <div>
                       <p className="text-sm text-gray-600">Address</p>
                       <p className="text-sm text-gray-700">123 Business Park, Tech City<br />Bangalore, Karnataka, India 560001</p>
-                    </div>
-                  </div>
-                </div>
+            </div>
+          </div>
+        </div>
               </div>
             </div>
           </div>

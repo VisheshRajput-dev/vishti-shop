@@ -778,30 +778,30 @@ export default function CheckoutPage() {
             {/* Order Summary on Mobile */}
             <div className="lg:hidden space-y-4">
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">Order Total</h3>
-                <div className="space-y-2">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Order Total</h3>
+              <div className="space-y-2">
+                <div className="flex justify-between text-gray-600">
+                  <span>Subtotal</span>
+                  <span>₹{subtotal.toLocaleString()}</span>
+                </div>
+                {!isWholesale && (
                   <div className="flex justify-between text-gray-600">
-                    <span>Subtotal</span>
-                    <span>₹{subtotal.toLocaleString()}</span>
+                    <span>Shipping</span>
+                    <span>
+                      {subtotal >= 1000 && deliveryOption === 'normal' 
+                        ? 'Free' 
+                        : `₹${shippingCost.toLocaleString()}`
+                      }
+                    </span>
                   </div>
-                  {!isWholesale && (
-                    <div className="flex justify-between text-gray-600">
-                      <span>Shipping</span>
-                      <span>
-                        {subtotal >= 1000 && deliveryOption === 'normal' 
-                          ? 'Free' 
-                          : `₹${shippingCost.toLocaleString()}`
-                        }
-                      </span>
-                    </div>
-                  )}
-                  <div className="flex justify-between text-gray-600">
-                    <span>GST (18%)</span>
-                    <span>₹{gst.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between text-lg font-bold text-gray-900 border-t border-gray-200 pt-2">
-                    <span>Total</span>
-                    <span>₹{total.toLocaleString()}</span>
+                )}
+                <div className="flex justify-between text-gray-600">
+                  <span>GST (18%)</span>
+                  <span>₹{gst.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between text-lg font-bold text-gray-900 border-t border-gray-200 pt-2">
+                  <span>Total</span>
+                  <span>₹{total.toLocaleString()}</span>
                   </div>
                 </div>
               </div>

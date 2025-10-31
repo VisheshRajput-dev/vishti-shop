@@ -70,7 +70,7 @@ export default function ProductDetailPage() {
             .filter((p) => p._id !== productData._id)
             .slice(0, 8);
           
-          setRelatedProducts(related);
+        setRelatedProducts(related);
         } else {
           // If no category, fetch some random products as fallback
           const relatedRes = await client.get(`/api/products?limit=8`);
@@ -554,11 +554,11 @@ export default function ProductDetailPage() {
             <div className="flex-1 max-w-2xl mx-auto">
               <div className="relative">
                 <FiSearch className="absolute left-4 top-3.5 text-gray-400" size={20} />
-                <input
-                  type="text"
-                  placeholder="Search products..."
-                  value={searchTerm}
-                  onChange={handleSearch}
+            <input
+              type="text"
+              placeholder="Search products..."
+              value={searchTerm}
+              onChange={handleSearch}
                   className="input w-full pl-12 pr-12"
                 />
                 {searchTerm && (
@@ -736,10 +736,10 @@ export default function ProductDetailPage() {
                           transition={{ delay: 0.2 + i * 0.05 }}
                         >
                           <FiStar
-                            className={`w-4 h-4 ${
-                              i < 4 ? "text-yellow-400 fill-current" : "text-gray-300"
-                            }`}
-                          />
+                          className={`w-4 h-4 ${
+                            i < 4 ? "text-yellow-400 fill-current" : "text-gray-300"
+                          }`}
+                        />
                         </motion.div>
                       ))}
                     </div>
@@ -761,11 +761,11 @@ export default function ProductDetailPage() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
-                          {isShop ? "Wholesale Price" : "Price"}
+                        {isShop ? "Wholesale Price" : "Price"}
                         </span>
-                        {isShop && (
+                      {isShop && (
                           <span className="px-2 py-1 text-xs font-bold bg-emerald-100 text-emerald-700 rounded-full">
-                            Wholesale
+                          Wholesale
                           </span>
                         )}
                       </div>
@@ -787,15 +787,15 @@ export default function ProductDetailPage() {
                            {/* Regular Price - Crossed Out */}
                            <div className="flex items-center gap-2">
                              <span className="text-lg text-gray-400 line-through font-medium">
-                               ₹{product.price}
-                             </span>
+                            ₹{product.price}
+                          </span>
                              <span className="px-2 py-1 text-xs font-bold bg-gray-100 text-gray-600 rounded-full">
                                Regular Price
                              </span>
-                           </div>
-                           
+                      </div>
+                    
                            {/* Wholesale Price */}
-                           <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2">
                              <span className="text-3xl lg:text-4xl font-bold text-gray-900">
                                ₹{product.wholesalePrice || 1999}
                              </span>
@@ -829,10 +829,10 @@ export default function ProductDetailPage() {
                            <span className="px-2 py-1 text-xs font-bold bg-blue-100 text-blue-700 rounded-full">
                              Regular Price
                            </span>
-                         </div>
-                       )}
-                     </div>
+                      </div>
+                    )}
                   </div>
+                </div>
                 </motion.div>
 
                 {/* Quantity Selector */}
@@ -913,15 +913,15 @@ export default function ProductDetailPage() {
                 )}
 
                  {/* Modern Action Buttons */}
-                 <div className="space-y-4">
+                <div className="space-y-4">
                    {cartItem ? (
                      // Product is in cart - show premium cart management
                      <div className="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 p-6 rounded-3xl border border-indigo-100 shadow-lg">
                        <div className="flex items-center gap-4 mb-6">
                          <div className="w-12 h-12 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
                            <FiShoppingCart className="w-6 h-6 text-white" />
-                         </div>
-                         <div>
+                          </div>
+                          <div>
                            <h3 className="text-lg font-bold text-gray-900">Item Added to Cart</h3>
                            <p className="text-sm text-gray-600">Quantity: {cartItem.quantity} • Ready for checkout</p>
                          </div>
@@ -929,83 +929,83 @@ export default function ProductDetailPage() {
                            <div className="bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full border border-indigo-200">
                              <span className="text-sm font-bold text-indigo-700">{cartItem.quantity}</span>
                            </div>
-                         </div>
-                       </div>
-                       
+                          </div>
+                        </div>
+                        
                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                         <motion.button
+                          <motion.button
                            whileHover={{ scale: 1.02, y: -2 }}
-                           whileTap={{ scale: 0.98 }}
-                           onClick={() => navigate('/cart')}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => navigate('/cart')}
                            className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-4 rounded-2xl hover:shadow-xl hover:from-indigo-700 hover:to-purple-700 flex items-center justify-center gap-3 font-semibold text-lg transition-all duration-300 shadow-lg"
-                         >
-                           <FiShoppingCart className="w-5 h-5" />
-                           View Cart
-                           <div className="bg-white/20 px-2 py-1 rounded-lg text-sm font-bold">
-                             {cartItem.quantity}
-                           </div>
-                         </motion.button>
-                         
-                         <motion.button
+                          >
+                            <FiShoppingCart className="w-5 h-5" />
+                            View Cart
+                            <div className="bg-white/20 px-2 py-1 rounded-lg text-sm font-bold">
+                              {cartItem.quantity}
+                            </div>
+                          </motion.button>
+                          
+                          <motion.button
                            whileHover={{ scale: 1.02, y: -2 }}
-                           whileTap={{ scale: 0.98 }}
-                           onClick={removeFromCart}
-                           disabled={updatingCart}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={removeFromCart}
+                            disabled={updatingCart}
                            className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-6 py-4 rounded-2xl hover:shadow-xl hover:from-red-600 hover:to-pink-600 disabled:opacity-50 flex items-center justify-center gap-3 font-semibold text-lg transition-all duration-300 shadow-lg disabled:transform-none"
-                         >
-                           <FiTrash2 className="w-5 h-5" />
-                           Remove
+                          >
+                            <FiTrash2 className="w-5 h-5" />
+                            Remove
                            {updatingCart && (
                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                            )}
-                         </motion.button>
-                       </div>
-                     </div>
-                   ) : (
-                     // Product not in cart - show premium add to cart button
-                     <motion.button
+                          </motion.button>
+                      </div>
+                    </div>
+                  ) : (
+                    // Product not in cart - show premium add to cart button
+                    <motion.button
                        whileHover={{ scale: 1.02, y: -2 }}
-                       whileTap={{ scale: 0.98 }}
-                       onClick={addToCart}
-                       disabled={!product.inStock || updatingCart}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={addToCart}
+                      disabled={!product.inStock || updatingCart}
                        className="w-full bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white px-8 py-5 rounded-2xl hover:shadow-2xl hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 disabled:opacity-50 flex items-center justify-center gap-4 font-bold text-xl transition-all duration-300 shadow-xl disabled:transform-none"
-                     >
+                    >
                        <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
                          <FiShoppingCart className="w-5 h-5" />
                        </div>
                        <span>{updatingCart ? 'Adding to Cart...' : 'Add to Cart'}</span>
-                       {updatingCart && (
-                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                       )}
+                      {updatingCart && (
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      )}
                        {!updatingCart && (
                          <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
                        )}
-                     </motion.button>
-                   )}
-                   
-                   {/* Buy Now Button */}
-                   <motion.button
+                    </motion.button>
+                  )}
+                  
+                  {/* Buy Now Button */}
+                    <motion.button
                      whileHover={{ scale: 1.02, y: -2 }}
-                     whileTap={{ scale: 0.98 }}
-                     onClick={handleBuyNow}
-                     disabled={!product.inStock}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={handleBuyNow}
+                      disabled={!product.inStock}
                      className="w-full bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 text-white px-8 py-5 rounded-2xl hover:shadow-2xl hover:from-orange-600 hover:via-red-600 hover:to-pink-600 disabled:opacity-50 font-bold text-xl transition-all duration-300 shadow-xl disabled:transform-none flex items-center justify-center gap-4"
-                   >
+                    >
                      <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                       </svg>
-                     </div>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  </div>
                      <span>Buy Now</span>
                      <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
                    </motion.button>
 
-                   {/* Wholesale Inquiry Button (for shop users) */}
-                   {isShop && (
-                     <motion.button
+                  {/* Wholesale Inquiry Button (for shop users) */}
+                  {isShop && (
+                    <motion.button
                        whileHover={{ scale: 1.02, y: -2 }}
-                       whileTap={{ scale: 0.98 }}
-                       onClick={() => setShowWholesaleForm(true)}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setShowWholesaleForm(true)}
                        className="w-full bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 text-white px-8 py-5 rounded-2xl hover:shadow-2xl hover:from-emerald-600 hover:via-green-600 hover:to-teal-600 font-bold text-xl transition-all duration-300 shadow-xl flex items-center justify-center gap-4"
                      >
                        <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
@@ -1013,13 +1013,13 @@ export default function ProductDetailPage() {
                        </div>
                        <span>Wholesale Inquiry</span>
                        <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                     </motion.button>
-                   )}
+                    </motion.button>
+                  )}
                  </div>
 
 
                  {/* Modern Description Section */}
-                 {product.description && (
+                {product.description && (
                    <motion.div 
                      initial={{ opacity: 0, y: 20 }}
                      animate={{ opacity: 1, y: 0 }}
@@ -1031,7 +1031,7 @@ export default function ProductDetailPage() {
                          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                          </svg>
-                       </div>
+                  </div>
                        <div>
                          <h3 className="text-xl font-bold text-gray-900">Product Description</h3>
                          <p className="text-sm text-gray-600">Detailed information about this product</p>
@@ -1091,7 +1091,7 @@ export default function ProductDetailPage() {
                        </div>
                      </div>
                    </motion.div>
-                 )}
+                )}
               </div>
             </div>
           </div>
@@ -1164,9 +1164,9 @@ export default function ProductDetailPage() {
                   <div className="relative overflow-hidden">
                     {/* Image Container */}
                     <div className="relative bg-gradient-to-br from-gray-50 to-gray-100 aspect-square overflow-hidden">
-                      <img
-                        src={relatedProduct.images?.[0] || "/placeholder.png"}
-                        alt={relatedProduct.name}
+                    <img
+                      src={relatedProduct.images?.[0] || "/placeholder.png"}
+                      alt={relatedProduct.name}
                         className="w-full h-full object-cover transition-all duration-500 group-hover:scale-110"
                       />
                       
@@ -1182,7 +1182,7 @@ export default function ProductDetailPage() {
                           >
                             <FiHeart className="text-sm" />
                           </button>
-                        </div>
+                  </div>
                       </div>
 
                       {/* Stock Badge */}
@@ -1196,10 +1196,10 @@ export default function ProductDetailPage() {
                     </div>
                     
                     {/* Product Info */}
-                    <div className="p-4">
+                  <div className="p-4">
                       <h3 className="font-bold text-gray-900 mb-2 line-clamp-2 text-sm group-hover:text-gradient transition-colors duration-200">
-                        {relatedProduct.name}
-                      </h3>
+                      {relatedProduct.name}
+                    </h3>
                       
                       {/* Price Section */}
                       <div className="mb-3">
@@ -1244,7 +1244,7 @@ export default function ProductDetailPage() {
               >
                 View All Products
               </motion.button>
-            </div>
+          </div>
           </motion.div>
         )}
       </div>
@@ -1310,20 +1310,20 @@ export default function ProductDetailPage() {
                   />
                 </div>
 
-                 <div>
-                   <label className="block text-sm font-medium text-gray-700 mb-1">Quantity *</label>
-                   <input
-                     type="number"
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Quantity *</label>
+                  <input
+                    type="number"
                      min={product?.wholesaleMinQty || 30}
-                     value={wholesaleForm.quantity}
+                    value={wholesaleForm.quantity}
                      onChange={(e) => setWholesaleForm(prev => ({ ...prev, quantity: parseInt(e.target.value) || (product?.wholesaleMinQty || 30) }))}
-                     required
-                     className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                   />
+                    required
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  />
                    <p className="text-xs text-gray-500 mt-1">
                      Minimum quantity: {product?.wholesaleMinQty || 30} units
                    </p>
-                 </div>
+                </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Message *</label>
