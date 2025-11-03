@@ -617,6 +617,7 @@ After getting your Vercel frontend URL, make sure your Railway backend's CORS in
 5. **Verify Environment Variables**
    - Railway: Go to Variables tab, verify all are set
    - Vercel: Go to Settings > Environment Variables, verify all are set
+   FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCuxf/UuWa73ion\n...more key data...\n-----END PRIVATE KEY-----\n"
 
 ## 📞 Getting Help
 

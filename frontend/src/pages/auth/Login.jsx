@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Loader from '../../components/Loader';
 import { useAuth } from '../../contexts/AuthContext';
+import logo from '../../assets/vishtishop_logo.png';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -123,9 +124,11 @@ export default function Login() {
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-3 mb-4">
-            <div className="h-12 w-12 rounded-2xl gradient-primary shadow-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">V</span>
-            </div>
+            <img 
+              src={logo} 
+              alt="Vishti Shop Logo" 
+              className="h-12 w-12 rounded-2xl object-contain"
+            />
             <h1 className="text-3xl font-bold text-gradient">Vishti Shop</h1>
           </div>
           <p className="text-gray-600">Welcome back! Please sign in to your account</p>

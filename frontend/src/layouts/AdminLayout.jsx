@@ -5,6 +5,7 @@ import { auth } from "../firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import client from "../api/client";
 import Loader from "../components/Loader";
+import logo from "../assets/vishtishop_logo.png";
 
 export default function AdminLayout() {
   const [loading, setLoading] = useState(true);
@@ -60,9 +61,16 @@ export default function AdminLayout() {
     <div className="flex min-h-screen bg-gray-100">
       {/* Sidebar */}
       <aside className="w-64 bg-indigo-600 text-white flex flex-col p-4">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold">Vishti Shop Admin</h2>
-          <p className="text-sm text-indigo-200 mt-1">{user?.email}</p>
+        <div className="mb-6 flex items-center gap-3">
+          <img 
+            src={logo} 
+            alt="Vishti Shop Logo" 
+            className="h-10 w-10 rounded-lg object-contain"
+          />
+          <div>
+            <h2 className="text-2xl font-bold">Vishti Shop Admin</h2>
+            <p className="text-sm text-indigo-200 mt-1">{user?.email}</p>
+          </div>
         </div>
         
         <nav className="flex flex-col gap-3 flex-1">

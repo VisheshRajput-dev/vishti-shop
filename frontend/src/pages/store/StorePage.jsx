@@ -7,6 +7,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import debounce from 'lodash/debounce';
 import { FiSearch, FiFilter, FiX, FiUser, FiChevronDown, FiLogOut, FiShoppingCart, FiUserPlus, FiPlus, FiMinus, FiZap, FiPackage, FiHeart } from 'react-icons/fi';
 import Masonry from 'react-masonry-css';
+import logo from '../../assets/vishtishop_logo.png';
 
 // Skeleton Loading Components
 const ProductCardSkeleton = () => (
@@ -430,9 +431,11 @@ export default function StorePage() {
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           {/* Brand */}
           <button onClick={() => navigate('/store')} className="flex items-center gap-3 group">
-            <div className="h-10 w-10 rounded-2xl gradient-primary shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
-              <span className="text-white font-bold text-lg">V</span>
-            </div>
+            <img 
+              src={logo} 
+              alt="Vishti Shop Logo" 
+              className="h-10 w-10 rounded-2xl object-contain group-hover:scale-110 transition-transform duration-200"
+            />
             <span className="text-xl font-bold text-gradient group-hover:scale-105 transition-transform duration-200">
               Vishti Shop
             </span>
@@ -947,9 +950,11 @@ export default function StorePage() {
               {/* Brand Section */}
               <div className="lg:col-span-2">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="h-12 w-12 rounded-2xl gradient-primary shadow-lg flex items-center justify-center">
-                    <span className="text-white font-bold text-xl">V</span>
-                  </div>
+                  <img 
+                    src={logo} 
+                    alt="Vishti Shop Logo" 
+                    className="h-12 w-12 rounded-2xl object-contain"
+                  />
                   <span className="text-2xl font-bold text-gradient">Vishti Shop</span>
                 </div>
                 <p className="text-gray-600 text-lg mb-6 max-w-md">
